@@ -5,14 +5,10 @@
 #   None
 #
 # Commands:
-#   hubot queue - show queue for day
-#   hubot queue me - add the user to queue, with timestamp
-#   hubot queue <issue> - add issue to the queue for user, with timestamp
-#   hubot dequeue me - remove the user from queue
-#   hubot queue empty - empty the queue for the day
-#
-#   hubot queue <repo#issue> - add issue to queue for user
-#   hubot dequeue <repo#issue> - dequeue an issue
+#   hubot queue (list) - show queue for day
+#   hubot queue me - add the user to queue
+#   hubot queue <issue> - add issue to the queue for user
+#   hubot queue remove|deployed <index> - remove the list item from queue
 #   hubot queue empty - empty the queue for the day
 #
 # Author:
@@ -28,30 +24,30 @@ class EasyQueue
         @cache = @robot.brain.data.easyQueue
 
   kill: (item) ->
-    console.log @cache
-    console.log @robot.brain
+    response = 'hmmmm...'
+
     if item
-      delete @cache[item]
+      queue = @sort()
+      listItem = queue[item - 1]
+
+      if listItem
+        delete @cache[listItem.time]
+        response = "Removed item from queue"
+      else
+        response = 'Nah, yo... stop lyin (please specify number from queue)'
     else
-      delete @cache
+      @cache = {}
+      response = 'The queue has been cleared'
 
     @robot.brain.data.easyQueue = @cache
+    response
 
-
-# @TODO: thinking items should be added to queue with ID instead of key. This
-#        would allow for multiple deploys per person, and would simplify sorting,
-#        but would make individual deletion more difficult. Alternately, could
-#        modify cache so that if key (person) already exists, we add index to
-#        both (depending on timestamp)
 
   addItem: (person, item) ->
     timeNow = new Date()
-    # currentHour = timeNow.getUTCHours() - (timeNow.getTimezoneOffset() / 60)
-    # currentMinutes = timeNow.getUTCMinutes()
-    # currentSeconds = timeNow.getUTCSeconds()
-    # @cache[person] = [currentHour, ':', currentMinutes, currentSeconds, ' EST (UTC-05:00)'].join('')
     @cache[timeNow.toISOString()] = {'user':person, 'item':item}
     @robot.brain.data.easyQueue = @cache
+    response = 'Item added to queue'
 
   getAll: ->
     sorted = @sort()
@@ -63,13 +59,13 @@ class EasyQueue
 
   sort: ->
     queue = []
-    console.log @cache
+    # console.log @cache
     for key, val of @cache
-      console.log 'queue before'
-      console.log queue
+      # console.log 'queue before'
+      # console.log queue
       queue.push({ time: key, object: val })
-    console.log 'queue after'
-    console.log queue
+    # console.log 'queue after'
+    # console.log queue
     queue.sort (a, b) -> b.time - a.time
 
 
@@ -77,21 +73,25 @@ module.exports = (robot) ->
   easyQueue = new EasyQueue robot
 
 
-  robot.hear /(queue|q) me ?(\S+[^-\s])?$/i, (msg) ->
+  robot.hear /(queue|q) me ?([^\s]+)?$/i, (msg) ->
     person = msg.message.user.name
-    item = if msg.match[2] then msg.match[2].toLowerCase()
-    easyQueue.addItem person, item
+    item = msg.match[2]
+    response = easyQueue.addItem person, item
+    msg.send response
 
 
   robot.respond /(queue|q) empty$/i, (msg) ->
-    easyQueue.kill()
-    msg.send 'The queue has been cleared'
+    response = easyQueue.kill()
+    msg.send response
 
 
-  robot.respond /(queue|q) remove ?(\d+)?$/i, (msg) ->
-    args = msg.match[1]
-    if not args then msg.send 'Please specify an item in the list'
-    easyQueue.kill(args)
+  robot.respond /(queue|q) (remove|deployed) ?(\d+)?$/i, (msg) ->
+    args = msg.match[2]
+    if not args
+      msg.send 'Please specify an item in the list'
+    else
+      response = easyQueue.kill(args)
+      msg.send response
 
 
   robot.respond /(queue|q)( list)?$/i, (msg) ->

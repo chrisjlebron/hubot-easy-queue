@@ -105,4 +105,15 @@ module.exports = (robot) ->
     else
       response = ['Nothing in the queue']
 
-    msg.send response.join("\n")
+    msg.send response.join('\n')
+
+
+  robot.respond /(queue|q) help$/i, (msg) ->
+    response = []
+    response.push('Commands:\n')
+    response.push('hubot queue (list) - show queue for day\n')
+    response.push('hubot queue me - add the user to queue\n')
+    response.push('hubot queue <issue> - add issue to the queue for user\n')
+    response.push('hubot queue remove|deployed <index> - remove the list item from queue\n')
+    response.push('hubot queue empty - empty the queue for the day)\n')
+    msg.send response.join('')

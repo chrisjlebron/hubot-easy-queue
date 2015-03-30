@@ -42,7 +42,6 @@ class EasyQueue
     @robot.brain.data.easyQueue = @cache
     response
 
-
   addItem: (person, item) ->
     timeNow = new Date()
     @cache[timeNow.toISOString()] = {'user':person, 'item':item}
@@ -52,20 +51,11 @@ class EasyQueue
   getAll: ->
     sorted = @sort()
 
-  # alreadyQueuedResponse: (name) ->
-  #   @already_queued_response = [
-  #     "#{name} is already in the queue"
-  #   ]
-
   sort: ->
     queue = []
-    # console.log @cache
+
     for key, val of @cache
-      # console.log 'queue before'
-      # console.log queue
       queue.push({ time: key, object: val })
-    # console.log 'queue after'
-    # console.log queue
     queue.sort (a, b) -> b.time - a.time
 
 
@@ -86,7 +76,7 @@ module.exports = (robot) ->
 
 
   robot.respond /(queue|q) (remove|deployed) ?(\d+)?$/i, (msg) ->
-    args = msg.match[2]
+    args = msg.match[3]
     if not args
       msg.send 'Please specify an item in the list'
     else

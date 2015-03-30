@@ -75,10 +75,14 @@ module.exports = (robot) ->
     msg.send response
 
 
+  robot.respond /(queue|q) (remove|deployed) ([^\d\s]+)$/i, (msg) ->
+      msg.send 'Please specify an item number from the list'
+
+
   robot.respond /(queue|q) (remove|deployed) ?(\d+)?$/i, (msg) ->
     args = msg.match[3]
     if not args
-      msg.send 'Please specify an item in the list'
+      msg.send 'Please specify an item number from the list'
     else
       response = easyQueue.kill(args)
       msg.send response

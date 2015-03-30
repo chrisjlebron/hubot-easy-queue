@@ -115,5 +115,5 @@ module.exports = (robot) ->
     response.push('\\queue me - add the user to queue\n')
     response.push('\\queue <issue> - add issue to the queue for user\n')
     response.push('\\queue remove|deployed <index> - remove the list item from queue\n')
-    response.push('\\queue empty - empty the queue for the day)\n')
+    response.push('\\queue empty - empty the queue for the day\n')
     msg.send response.join('')

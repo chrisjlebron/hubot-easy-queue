@@ -7,9 +7,10 @@
 # Commands:
 #   hubot queue (list) - show queue for day
 #   hubot queue me - add the user to queue
-#   hubot queue <issue> - add issue to the queue for user
+#   hubot queue me <issue> - add issue to the queue for user
 #   hubot queue remove|deployed <index> - remove the list item from queue
 #   hubot queue empty - empty the queue for the day
+#   hubot queue help - get list of queue commands
 #
 # Author:
 #   chrisjlebron
@@ -34,7 +35,8 @@ class EasyQueue
         delete @cache[listItem.time]
         response = "Removed item from queue"
       else
-        response = 'Nah, yo... stop lyin (please specify number from queue)'
+        response = "Nah, yo... stop lyin
+          (please specify an item number from the list)"
     else
       @cache = {}
       response = 'The queue has been cleared'
@@ -63,7 +65,7 @@ module.exports = (robot) ->
   easyQueue = new EasyQueue robot
 
 
-  robot.hear /(queue|q) me ?([^\s]+)?$/i, (msg) ->
+  robot.respond /(queue|q) me ?([^\s]+)?$/i, (msg) ->
     person = msg.message.user.name
     item = msg.match[2]
     response = easyQueue.addItem person, item
@@ -107,7 +109,7 @@ module.exports = (robot) ->
     response.push('Commands:\n')
     response.push('\\queue (list) - show queue for day\n')
     response.push('\\queue me - add the user to queue\n')
-    response.push('\\queue <issue> - add issue to the queue for user\n')
+    response.push('\\queue me <issue> - add issue to the queue for user\n')
     response.push('\\queue remove|deployed <index> - remove the list item from queue\n')
     response.push('\\queue empty - empty the queue for the day\n')
     msg.send response.join('')

@@ -80,14 +80,21 @@ module.exports = (robot) ->
   robot.respond /(queue|q) (remove|deployed) ([^\d\s]+)$/i, (msg) ->
       msg.send 'Please specify an item number from the list'
 
+  # Want to change this to take in all args and handle each accordingly.
+  # Would handle:
+  # - error message on mixed input
+  # - error message on number that's not in our list
+  # - success message and action on number that matches list item
+  robot.respond /(queue|q) remove ?(\S+)?$/i, (msg) ->
+    args = msg.match[2]
 
-  robot.respond /(queue|q) (remove|deployed) ?(\d+)?$/i, (msg) ->
-    args = msg.match[3]
-    if not args
+    if not args or /([^\d\s]+)/.test(args)
       msg.send 'Please specify an item number from the list'
-    else
+    else if /\d+/.test(args)
       response = easyQueue.kill(args)
       msg.send response
+    else
+      msg.send 'Who you swattin at?!?!'
 
 
   robot.respond /(queue|q)( list)?$/i, (msg) ->

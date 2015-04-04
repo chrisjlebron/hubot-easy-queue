@@ -6,10 +6,11 @@
 #
 # Commands:
 #   hubot queue (list) - show queue for day
-#   hubot queue me - add the user to queue
+#   hubot queue me - add user name to the queue
 #   hubot queue me <issue> - add issue to the queue for user
-#   hubot queue remove|deployed <index> - remove the list item from queue
-#   hubot queue empty - empty the queue for the day
+#   hubot queue remove <index> - remove a list item from queue, by number provided
+#   hubot queue deployed - remove the top list item from queue
+#   hubot queue empty - empty the queue
 #   hubot queue help - get list of queue commands
 #
 # Author:
@@ -77,14 +78,11 @@ module.exports = (robot) ->
     msg.send response
 
 
-  robot.respond /(queue|q) (remove|deployed) ([^\d\s]+)$/i, (msg) ->
-      msg.send 'Please specify an item number from the list'
+  robot.respond /(q |queue )?deployed/i, (msg) ->
+    response = easyQueue.kill(1)
+    msg.send response
 
-  # Want to change this to take in all args and handle each accordingly.
-  # Would handle:
-  # - error message on mixed input
-  # - error message on number that's not in our list
-  # - success message and action on number that matches list item
+
   robot.respond /(queue|q) remove ?(\S+)?$/i, (msg) ->
     args = msg.match[2]
 
@@ -94,7 +92,7 @@ module.exports = (robot) ->
       response = easyQueue.kill(args)
       msg.send response
     else
-      msg.send 'Who you swattin at?!?!'
+      msg.send 'What you swattin at?!?!'
 
 
   robot.respond /(queue|q)( list)?$/i, (msg) ->
@@ -115,8 +113,10 @@ module.exports = (robot) ->
     response = []
     response.push('Commands:\n')
     response.push('\\queue (list) - show queue for day\n')
-    response.push('\\queue me - add the user to queue\n')
+    response.push('\\queue me - add user name to the queue\n')
     response.push('\\queue me <issue> - add issue to the queue for user\n')
-    response.push('\\queue remove|deployed <index> - remove the list item from queue\n')
-    response.push('\\queue empty - empty the queue for the day\n')
+    response.push('\\deployed (or \\queue deployed)- remove the top list item from queue\n')
+    response.push('\\queue remove <index> - remove a list item from queue, by number provided\n')
+    response.push('\\queue empty - empty the queue\n')
+    response.push('\\queue help - get list of queue commands\n')
     msg.send response.join('')

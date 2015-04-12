@@ -29,7 +29,7 @@ class EasyQueue
     response = 'hmmmm...'
 
     if item
-      queue = @sort()
+      queue = @getAll()
       listItem = queue[item - 1]
 
       if listItem
@@ -43,13 +43,14 @@ class EasyQueue
       response = 'The queue has been cleared'
 
     @robot.brain.data.easyQueue = @cache
-    response
+    response + @printQueue()
 
   addItem: (person, item) ->
     timeNow = new Date()
     @cache[timeNow.toISOString()] = {'user':person, 'item':item}
     @robot.brain.data.easyQueue = @cache
     response = 'Item added to queue'
+    response + @printQueue()
 
   getAll: ->
     sorted = @sort()
@@ -60,6 +61,21 @@ class EasyQueue
     for key, val of @cache
       queue.push({ time: key, object: val })
     queue.sort (a, b) -> b.time - a.time
+
+  printQueue: (withoutBreaks) ->
+    queue = @getAll()
+    response = ['Deployment Queue:']
+
+    if queue.length
+      for item, rank in queue
+        issueText = if item.object.item then " - #{item.object.item}" else ''
+        response.push "#{rank + 1}. #{item.object.user}#{issueText}"
+    else
+      response = ['Nothing in the queue']
+
+    response.unshift '\n' unless withoutBreaks is on
+    response = response.join('\n')
+
 
 
 module.exports = (robot) ->
@@ -85,9 +101,10 @@ module.exports = (robot) ->
 
   robot.respond /(queue|q) remove ?(\S+)?$/i, (msg) ->
     args = msg.match[2]
+    listResponse = easyQueue.printQueue()
 
     if not args or /([^\d\s]+)/.test(args)
-      msg.send 'Please specify an item number from the list'
+      msg.send 'Please specify an item number from the list' + listResponse
     else if /\d+/.test(args)
       response = easyQueue.kill(args)
       msg.send response
@@ -96,17 +113,8 @@ module.exports = (robot) ->
 
 
   robot.respond /(queue|q)( list)?$/i, (msg) ->
-    response = ['Today\'s Queue']
-    queue = easyQueue.getAll()
-
-    if queue.length
-      for item, rank in queue
-        issueText = if item.object.item then " - #{item.object.item}" else ''
-        response.push "#{rank + 1}. #{item.object.user}#{issueText}"
-    else
-      response = ['Nothing in the queue']
-
-    msg.send response.join('\n')
+    response = easyQueue.printQueue(true)
+    msg.send response
 
 
   robot.respond /(queue|q) help$/i, (msg) ->

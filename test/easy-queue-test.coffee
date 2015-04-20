@@ -1,3 +1,6 @@
+# Script we're testing
+easyQueue = require '../src/easy-queue'
+
 chai = require 'chai'
 { expect } = chai
 
@@ -13,6 +16,9 @@ describe 'hubot-easy-queue', ->
   user2 = {}
   adapter = {}
 
+  # @TODO: Consider making this a beforeEach & loading data into robot
+  # for the tests which require existing data
+  #
   before (done) ->
     # this is global setup for the test.
     #
@@ -25,9 +31,8 @@ describe 'hubot-easy-queue', ->
       # process.env.HUBOT_AUTH_ADMIN = '1'
       # robot.loadFile path.resolve(path.join('node_modules/hubot/src/scripts')),'auth.coffee'
 
-      # load the module under test and configure it for the
-      # robot.  This is in place of external-scripts
-      (require '../src/easy-queue')(robot)
+      # load the module being tested and pass in the robot.
+      easyQueue(robot)
 
       # create the users
       user1 = robot.brain.userForId "1",
@@ -56,9 +61,9 @@ describe 'hubot-easy-queue', ->
     robot.adapter.removeAllListeners()
 
 
-# Might also want to consider replacing with (or adding in)
-# checks against robot.brain.data.easyQueue, rather than
-# text messages, as text is more liable to change
+  # @TODO: Consider replacing with (or adding in) more
+  # checks against robot.brain.data.easyQueue, rather than
+  # text messages, as text is more liable to change
   it 'prints the help text', (done) ->
     adapter.on 'send', (envelope, strings) ->
       expect(strings[0]).to.contain('Commands:')

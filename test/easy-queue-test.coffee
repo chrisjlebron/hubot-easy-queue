@@ -68,7 +68,11 @@ describe 'hubot-easy-queue', ->
 
   it 'adds user to queue', (done) ->
     adapter.on 'send', (envelope, strings) ->
+      queue = robot.brain.data.easyQueue
+      listKeys = Object.keys queue
+
       expect(strings[0]).to.match(/Item added to queue\n\nDeployment Queue:\n1\. first/)
+      expect(listKeys).to.have.length(1)
       done()
 
     adapter.receive new TextMessage user1, 'qbot queue me'

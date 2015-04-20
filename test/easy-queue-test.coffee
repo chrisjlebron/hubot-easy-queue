@@ -89,3 +89,44 @@ describe 'hubot-easy-queue', ->
       done()
 
     adapter.receive new TextMessage user1, 'qbot queue list'
+
+  it 'throws error when trying to remove item not in list', (done) ->
+    adapter.on 'send', (envelope, strings) ->
+      expect(strings[0].toLowerCase()).to.contain('please specify an item number from the list')
+      done()
+
+    adapter.receive new TextMessage user1, 'qbot queue remove 42'
+
+  it 'removes specified item from list', (done) ->
+    adapter.on 'send', (envelope, strings) ->
+      expect(strings[0].toLowerCase()).to.contain('removed item from queue')
+      done()
+
+    adapter.receive new TextMessage user1, 'qbot queue remove 2'
+
+  it 'removes top item from list', (done) ->
+    adapter.on 'send', (envelope, strings) ->
+      command = envelope.message.text
+
+      # only perform assertion for the "deployed" command (ignore adding new item)
+      if command.match(/deployed/)
+        expect(strings[0]).to.contain('Removed item from queue\n\nDeployment Queue:\n1. second - 2')
+        done()
+
+    adapter.receive new TextMessage user2, 'qbot queue me 2'
+    adapter.receive new TextMessage user2, 'qbot queue deployed'
+
+  it 'clears all items from list', (done) ->
+    adapter.on 'send', (envelope, strings) ->
+      command = envelope.message.text
+      queue = robot.brain.data.easyQueue
+
+      # only perform assertion for the "deployed" command (ignore adding new item)
+      if command.match(/empty/)
+        expect(strings[0].toLowerCase()).to.contain('nothing in the queue')
+        expect(queue).to.be.empty
+        done()
+
+    adapter.receive new TextMessage user1, 'qbot queue me 3'
+    adapter.receive new TextMessage user2, 'qbot queue me 4'
+    adapter.receive new TextMessage user2, 'qbot queue empty'

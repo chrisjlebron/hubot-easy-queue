@@ -5,7 +5,8 @@ chai = require 'chai'
 Robot = require 'hubot/src/robot'
 TextMessage = require('hubot/src/message').TextMessage
 
-process.env.HUBOT_LOG_LEVEL = 'debug'
+# uncomment if you need to debug hubot for tests
+# process.env.HUBOT_LOG_LEVEL = 'debug'
 
 describe 'hubot-easy-queue', ->
   robot = {}
@@ -14,6 +15,8 @@ describe 'hubot-easy-queue', ->
   adapter = {}
 
   before (done) ->
+    # this is global setup for the test
+    # we'll create a robot & set up the env as we expect it
     # create new robot, without http, using the mock adapter
     robot = new Robot null, 'mock-adapter', false, 'qbot'
 
@@ -45,11 +48,26 @@ describe 'hubot-easy-queue', ->
     robot.run()
 
   after ->
+    # Shutdown the robot after the tests are finished running
     robot.shutdown()
 
   afterEach ->
+    # Need to remove the listeners after each test runs so they
+    # don't run in duplicate, i.e. after first adapter.on, the second
+    # (and third, etc.) will be added on top, but the first will keep responding
+    # to each new adapter.receive
     robot.adapter.removeAllListeners()
 
+
+# Might also want to consider replacing with (or adding in)
+# checks against robot.brain.data.easyQueue, rather than
+# text messages, as text is more liable to change
+  it 'prints the help text', (done) ->
+    adapter.on 'send', (envelope, strings) ->
+      expect(strings[0]).to.contain('Commands:')
+      done()
+
+    adapter.receive new TextMessage user1, 'qbot queue help'
 
   it 'adds user to queue', (done) ->
     adapter.on 'send', (envelope, strings) ->

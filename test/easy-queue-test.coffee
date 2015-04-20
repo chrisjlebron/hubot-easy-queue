@@ -1,4 +1,3 @@
-# path   = require 'path'
 chai = require 'chai'
 { expect } = chai
 
@@ -15,24 +14,22 @@ describe 'hubot-easy-queue', ->
   adapter = {}
 
   before (done) ->
-    # this is global setup for the test
+    # this is global setup for the test.
+    #
     # we'll create a robot & set up the env as we expect it
     # create new robot, without http, using the mock adapter
     robot = new Robot null, 'mock-adapter', false, 'qbot'
 
     robot.adapter.on 'connected', ->
-      # console.log path
       # only load scripts we absolutely need, like auth.coffee
       # process.env.HUBOT_AUTH_ADMIN = '1'
       # robot.loadFile path.resolve(path.join('node_modules/hubot/src/scripts')),'auth.coffee'
-      # robot.loadFile path.resolve(path.join('node_modules/hubot/scripts')),'httpd.coffee'
 
       # load the module under test and configure it for the
       # robot.  This is in place of external-scripts
       (require '../src/easy-queue')(robot)
 
-
-      # create a user
+      # create the users
       user1 = robot.brain.userForId "1",
         name: 'first',
         room: '#mocha'
@@ -121,7 +118,7 @@ describe 'hubot-easy-queue', ->
       command = envelope.message.text
       queue = robot.brain.data.easyQueue
 
-      # only perform assertion for the "deployed" command (ignore adding new item)
+      # only perform assertion for the "empty" command (ignore adding new items)
       if command.match(/empty/)
         expect(strings[0].toLowerCase()).to.contain('nothing in the queue')
         expect(queue).to.be.empty

@@ -19,6 +19,7 @@
 class EasyQueue
 
   constructor: (@robot) ->
+    # Consider making cache an array rather than an object
     @cache = {}
 
     @robot.brain.on 'loaded', =>
